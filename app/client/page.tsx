@@ -1,16 +1,20 @@
-"use client";
+import { redirect } from "next/navigation";
 
-import { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+type Props = {
+  searchParams: {
+    phone?: string;
+  };
+};
 
-export default function ClientIndexPage() {
-  const router = useRouter();
-  const params = useSearchParams();
-  const phone = params.get("phone") || "";
+export default function ClientIndexPage({
+  searchParams,
+}: Props) {
+  const phone =
+    searchParams.phone || "";
 
-  useEffect(() => {
-    router.replace(`/client/solicitar?phone=${encodeURIComponent(phone)}`);
-  }, [router, phone]);
-
-  return null;
+  redirect(
+    `/client/solicitar?phone=${encodeURIComponent(
+      phone
+    )}`
+  );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 type PrestamoDetalle = {
   id?: string | number;
@@ -14,16 +14,25 @@ type PrestamoDetalle = {
   metodo_pago_label?: string;
 };
 
-export default function LoanDetailPage() {
-  const router = useRouter();
-  const params = useSearchParams();
+type Props = {
+  searchParams: {
+    phone?: string;
+    id?: string;
+  };
+};
 
-  const phone = params.get("phone") || "";
-  const id = params.get("id") || "";
+export default function LoanDetailPage({
+  searchParams,
+}: Props) {
+  const router = useRouter();
+
+  const phone = searchParams.phone || "";
+  const id = searchParams.id || "";
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [prestamo, setPrestamo] = useState<PrestamoDetalle | null>(null);
+  const [prestamo, setPrestamo] =
+    useState<PrestamoDetalle | null>(null);
 
   const money = (value: any) => {
     const n = Number(value || 0);
@@ -63,11 +72,12 @@ export default function LoanDetailPage() {
         return;
       }
 
-      // 🔥 CORREGIDO
       const item =
         data?.data ||
         data?.prestamo ||
-        (Array.isArray(data?.items) ? data.items[0] : null) ||
+        (Array.isArray(data?.items)
+          ? data.items[0]
+          : null) ||
         null;
 
       if (!item) {
@@ -93,7 +103,10 @@ export default function LoanDetailPage() {
       prestamo?.cuenta_bancaria ||
       "No disponible";
 
-    await navigator.clipboard.writeText(cuenta);
+    await navigator.clipboard.writeText(
+      cuenta
+    );
+
     alert("Cuenta copiada");
   };
 
@@ -154,7 +167,6 @@ export default function LoanDetailPage() {
 
   return (
     <main className="min-h-screen bg-[#F2F3F7] text-[#111827]">
-      {/* HEADER */}
       <section className="relative h-[220px] overflow-hidden">
         <img
           src="/images/aa.jpg"
@@ -187,7 +199,6 @@ export default function LoanDetailPage() {
         </div>
       </section>
 
-      {/* BODY */}
       <section className="mx-auto max-w-xl space-y-5 px-5 py-6">
         <div className="text-center">
           <h2 className="text-lg font-bold text-gray-900">

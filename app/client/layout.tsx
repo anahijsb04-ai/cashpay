@@ -1,50 +1,50 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+type Props = {
+  children: React.ReactNode;
+};
 
 export default function ClientLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
-  const router = useRouter();
+}: Props) {
   const pathname = usePathname();
-  const params = useSearchParams();
 
-  const phone = params.get("phone") || "";
-
-  const goTo = (path: string) => {
-    router.push(`${path}?phone=${encodeURIComponent(phone)}`);
-  };
-
-  const navItems = [
+  const nav = [
     {
-      label: "Solicitar",
+      name: "Solicitar",
       icon: "🏠",
-      path: "/client/solicitar",
+      href: "/client/solicitar",
     },
     {
-      label: "Mis préstamos",
+      name: "Préstamos",
       icon: "💳",
-      path: "/client/prestamos",
+      href: "/client/prestamos",
     },
     {
-      label: "Config",
+      name: "Config",
       icon: "⚙️",
-      path: "/client/config",
+      href: "/client/config",
     },
   ];
 
   return (
     <main className="min-h-screen bg-[#F4F7FB] text-[#111827] pb-28">
+      {/* Header */}
       <header className="bg-white px-5 pt-10 pb-6 shadow-sm">
         <div className="mx-auto max-w-xl">
-          <p className="text-sm font-medium text-gray-400">Bienvenido</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-400">
+                Bienvenido
+              </p>
 
-          <div className="mt-1 flex items-center justify-between">
-            <h1 className="text-3xl font-extrabold text-gray-900">
-              CashPay
-            </h1>
+              <h1 className="text-3xl font-extrabold text-gray-900">
+                CashPay
+              </h1>
+            </div>
 
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-600 text-lg font-bold text-white shadow-lg">
               C
@@ -52,36 +52,45 @@ export default function ClientLayout({
           </div>
 
           <div className="mt-5 rounded-3xl bg-gradient-to-r from-blue-700 to-cyan-500 p-5 text-white shadow-lg">
-            <p className="text-sm text-white/75">Cuenta activa</p>
+            <p className="text-sm text-white/75">
+              Cuenta activa
+            </p>
+
             <p className="mt-1 text-lg font-semibold">
-              {phone || "Sin teléfono"}
+              Cliente
             </p>
           </div>
         </div>
       </header>
 
+      {/* Body */}
       <section className="mx-auto max-w-xl px-5 pt-5">
         {children}
       </section>
 
+      {/* Bottom Nav */}
       <nav className="fixed bottom-5 left-0 right-0 px-4">
         <div className="mx-auto flex max-w-xl items-center justify-between rounded-[28px] bg-white px-3 py-3 shadow-2xl ring-1 ring-gray-200">
-          {navItems.map((item) => {
-            const active = pathname === item.path;
+          {nav.map((item) => {
+            const active =
+              pathname === item.href;
 
             return (
-              <button
-                key={item.path}
-                onClick={() => goTo(item.path)}
+              <Link
+                key={item.href}
+                href={item.href}
                 className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl py-2 text-xs font-semibold transition-all ${
                   active
                     ? "bg-blue-600 text-white shadow-lg"
                     : "text-gray-400 hover:text-gray-700"
                 }`}
               >
-                <span className="text-lg">{item.icon}</span>
-                <span>{item.label}</span>
-              </button>
+                <span className="text-lg">
+                  {item.icon}
+                </span>
+
+                <span>{item.name}</span>
+              </Link>
             );
           })}
         </div>

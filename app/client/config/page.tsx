@@ -1,17 +1,22 @@
-"use client";
+import Link from "next/link";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+type Props = {
+  searchParams: {
+    phone?: string;
+  };
+};
 
-export default function ConfigPage() {
-  const router = useRouter();
-  const params = useSearchParams();
+export default function ConfigPage({
+  searchParams,
+}: Props) {
+  const phone =
+    searchParams.phone || "Usuario";
 
-  const phone = params.get("phone") || "Usuario";
-
-  const [ocultarMontos, setOcultarMontos] = useState(false);
-
-  const Card = ({ children }: { children: React.ReactNode }) => (
+  const Card = ({
+    children,
+  }: {
+    children: React.ReactNode;
+  }) => (
     <div className="rounded-[26px] bg-white p-5 shadow-sm ring-1 ring-gray-200">
       {children}
     </div>
@@ -64,18 +69,19 @@ export default function ConfigPage() {
 
       {/* BODY */}
       <section className="mx-auto max-w-xl space-y-5 px-5 pt-6">
-        {/* Cuenta */}
         <Card>
           <h2 className="text-lg font-bold text-gray-900">
             Cuenta
           </h2>
 
           <div className="mt-4">
-            <Item label="Teléfono" value={phone} />
+            <Item
+              label="Teléfono"
+              value={phone}
+            />
           </div>
         </Card>
 
-        {/* Seguridad */}
         <Card>
           <h2 className="text-lg font-bold text-gray-900">
             Seguridad
@@ -87,34 +93,13 @@ export default function ConfigPage() {
               value="Activo"
             />
 
-            <div className="flex items-center justify-between gap-4 py-2">
-              <span className="text-sm text-gray-500">
-                Ocultar montos
-              </span>
-
-              <button
-                onClick={() =>
-                  setOcultarMontos(!ocultarMontos)
-                }
-                className={`relative h-7 w-14 rounded-full transition ${
-                  ocultarMontos
-                    ? "bg-blue-600"
-                    : "bg-gray-300"
-                }`}
-              >
-                <span
-                  className={`absolute top-1 h-5 w-5 rounded-full bg-white transition ${
-                    ocultarMontos
-                      ? "left-8"
-                      : "left-1"
-                  }`}
-                />
-              </button>
-            </div>
+            <Item
+              label="Ocultar montos"
+              value="Disponible"
+            />
           </div>
         </Card>
 
-        {/* Soporte */}
         <Card>
           <h2 className="text-lg font-bold text-gray-900">
             Soporte
@@ -129,13 +114,11 @@ export default function ConfigPage() {
           </p>
         </Card>
 
-        {/* Logout */}
-        <button
-          onClick={() => router.push("/login")}
-          className="h-[56px] w-full rounded-[22px] bg-red-500 font-semibold text-white shadow-lg"
-        >
-          Cerrar sesión
-        </button>
+        <Link href="/login">
+          <button className="h-[56px] w-full rounded-[22px] bg-red-500 font-semibold text-white shadow-lg">
+            Cerrar sesión
+          </button>
+        </Link>
       </section>
     </main>
   );
