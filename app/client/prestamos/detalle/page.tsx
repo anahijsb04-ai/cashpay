@@ -1,11 +1,13 @@
 "use client";
 
-import { use } from "react";
 import {
   useEffect,
   useState,
 } from "react";
-import { useRouter } from "next/navigation";
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 
 type PrestamoDetalle = {
   id?: string | number;
@@ -18,26 +20,18 @@ type PrestamoDetalle = {
   metodo_pago_label?: string;
 };
 
-type Props = {
-  searchParams: Promise<{
-    phone?: string;
-    id?: string;
-  }>;
-};
+export default function LoanDetailPage() {
+  const router =
+    useRouter();
 
-export default function LoanDetailPage({
-  searchParams,
-}: Props) {
   const params =
-    use(searchParams);
-
-  const router = useRouter();
+    useSearchParams();
 
   const phone =
-    params?.phone || "";
+    params.get("phone") || "";
 
   const id =
-    params?.id || "";
+    params.get("id") || "";
 
   const [loading, setLoading] =
     useState(true);
@@ -52,6 +46,7 @@ export default function LoanDetailPage({
 
   const money = (value: any) => {
     const n = Number(value || 0);
+
     return `$${n.toLocaleString(
       "es-MX"
     )}`;
@@ -63,7 +58,9 @@ export default function LoanDetailPage({
     if (!value) return "-";
 
     try {
-      const d = new Date(value);
+      const d =
+        new Date(value);
+
       return d.toLocaleDateString(
         "es-MX"
       );
@@ -72,85 +69,89 @@ export default function LoanDetailPage({
     }
   };
 
-  const cargarDetalle =
-    async () => {
-      try {
-        setLoading(true);
-        setError("");
+  async function cargarDetalle() {
+    try {
+      setLoading(true);
+      setError("");
 
-        const res = await fetch(
-          `/api/prestamos/detalle?id=${encodeURIComponent(
-            id
-          )}&telefono=${encodeURIComponent(
-            phone
-          )}`,
-          {
-            cache:
-              "no-store",
-          }
-        );
-
-        const data =
-          await res.json();
-
-        if (
-          !res.ok ||
-          !data?.ok
-        ) {
-          setError(
-            "No se pudo cargar el préstamo"
-          );
-          setLoading(false);
-          return;
-        }
-
-        const item =
-          data?.data ||
-          data?.prestamo ||
-          (Array.isArray(
-            data?.items
-          )
-            ? data.items[0]
-            : null) ||
-          null;
-
-        if (!item) {
-          setError(
-            "Sin información del préstamo"
-          );
-          setLoading(false);
-          return;
-        }
-
-        setPrestamo(item);
-        setLoading(false);
-      } catch {
+      if (!phone || !id) {
         setError(
-          "Error de conexión"
+          "Datos incompletos"
         );
         setLoading(false);
+        return;
       }
-    };
+
+      const res = await fetch(
+        `/api/prestamos/detalle?id=${encodeURIComponent(
+          id
+        )}&telefono=${encodeURIComponent(
+          phone
+        )}`,
+        {
+          cache:
+            "no-store",
+        }
+      );
+
+      const data =
+        await res.json();
+
+      if (
+        !res.ok ||
+        !data?.ok
+      ) {
+        setError(
+          "No se pudo cargar el préstamo"
+        );
+        setLoading(false);
+        return;
+      }
+
+      const item =
+        data?.data ||
+        data?.prestamo ||
+        (Array.isArray(
+          data?.items
+        )
+          ? data.items[0]
+          : null);
+
+      if (!item) {
+        setError(
+          "Sin información del préstamo"
+        );
+        setLoading(false);
+        return;
+      }
+
+      setPrestamo(item);
+    } catch {
+      setError(
+        "Error de conexión"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    if (phone && id)
-      cargarDetalle();
+    cargarDetalle();
   }, [phone, id]);
 
-  const copiarCuenta =
-    async () => {
-      const cuenta =
-        prestamo?.cuenta_bancaria ||
-        "No disponible";
+  async function copiarCuenta() {
+    const cuenta =
+      prestamo?.cuenta_bancaria ||
+      "No disponible";
 
-      await navigator.clipboard.writeText(
-        cuenta
-      );
+    await navigator.clipboard.writeText(
+      cuenta
+    );
 
-      alert(
-        "Cuenta copiada"
-      );
-    };
+    alert(
+      "Cuenta copiada"
+    );
+  }
 
   if (loading) {
     return (
