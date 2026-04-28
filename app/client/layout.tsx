@@ -4,8 +4,10 @@ import Link from "next/link";
 import { Suspense } from "react";
 import {
   usePathname,
+  useRouter,
   useSearchParams,
 } from "next/navigation";
+import { useEffect } from "react";
 
 type Props = {
   children: React.ReactNode;
@@ -17,6 +19,9 @@ function ClientLayoutInner({
   const pathname =
     usePathname();
 
+  const router =
+    useRouter();
+
   const params =
     useSearchParams();
 
@@ -27,6 +32,39 @@ function ClientLayoutInner({
     params.get("nombre") ||
     phone ||
     "Cliente";
+
+  useEffect(() => {
+    if (
+      pathname.startsWith(
+        "/client"
+      ) &&
+      !phone
+    ) {
+      const saved =
+        localStorage.getItem(
+          "cashpay_phone"
+        );
+
+      if (saved) {
+        router.replace(
+          `${pathname}?phone=${encodeURIComponent(
+            saved
+          )}`
+        );
+      }
+    }
+
+    if (phone) {
+      localStorage.setItem(
+        "cashpay_phone",
+        phone
+      );
+    }
+  }, [
+    phone,
+    pathname,
+    router,
+  ]);
 
   const nav = [
     {
