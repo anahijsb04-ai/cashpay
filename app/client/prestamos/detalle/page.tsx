@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
 
 type PrestamoDetalle = {
@@ -15,106 +19,145 @@ type PrestamoDetalle = {
 };
 
 type Props = {
-  searchParams: {
+  searchParams: Promise<{
     phone?: string;
     id?: string;
-  };
+  }>;
 };
 
 export default function LoanDetailPage({
   searchParams,
 }: Props) {
+  const params =
+    use(searchParams);
+
   const router = useRouter();
 
-  const phone = searchParams.phone || "";
-  const id = searchParams.id || "";
+  const phone =
+    params?.phone || "";
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const id =
+    params?.id || "";
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [error, setError] =
+    useState("");
+
   const [prestamo, setPrestamo] =
-    useState<PrestamoDetalle | null>(null);
+    useState<PrestamoDetalle | null>(
+      null
+    );
 
   const money = (value: any) => {
     const n = Number(value || 0);
-    return `$${n.toLocaleString("es-MX")}`;
+    return `$${n.toLocaleString(
+      "es-MX"
+    )}`;
   };
 
-  const formatFecha = (value?: string) => {
+  const formatFecha = (
+    value?: string
+  ) => {
     if (!value) return "-";
 
     try {
       const d = new Date(value);
-      return d.toLocaleDateString("es-MX");
+      return d.toLocaleDateString(
+        "es-MX"
+      );
     } catch {
       return value;
     }
   };
 
-  const cargarDetalle = async () => {
-    try {
-      setLoading(true);
-      setError("");
+  const cargarDetalle =
+    async () => {
+      try {
+        setLoading(true);
+        setError("");
 
-      const res = await fetch(
-        `/api/prestamos/detalle?id=${encodeURIComponent(
-          id
-        )}&telefono=${encodeURIComponent(phone)}`,
-        {
-          cache: "no-store",
+        const res = await fetch(
+          `/api/prestamos/detalle?id=${encodeURIComponent(
+            id
+          )}&telefono=${encodeURIComponent(
+            phone
+          )}`,
+          {
+            cache:
+              "no-store",
+          }
+        );
+
+        const data =
+          await res.json();
+
+        if (
+          !res.ok ||
+          !data?.ok
+        ) {
+          setError(
+            "No se pudo cargar el préstamo"
+          );
+          setLoading(false);
+          return;
         }
-      );
 
-      const data = await res.json();
+        const item =
+          data?.data ||
+          data?.prestamo ||
+          (Array.isArray(
+            data?.items
+          )
+            ? data.items[0]
+            : null) ||
+          null;
 
-      if (!res.ok || !data?.ok) {
-        setError("No se pudo cargar el préstamo");
+        if (!item) {
+          setError(
+            "Sin información del préstamo"
+          );
+          setLoading(false);
+          return;
+        }
+
+        setPrestamo(item);
         setLoading(false);
-        return;
-      }
-
-      const item =
-        data?.data ||
-        data?.prestamo ||
-        (Array.isArray(data?.items)
-          ? data.items[0]
-          : null) ||
-        null;
-
-      if (!item) {
-        setError("Sin información del préstamo");
+      } catch {
+        setError(
+          "Error de conexión"
+        );
         setLoading(false);
-        return;
       }
-
-      setPrestamo(item);
-      setLoading(false);
-    } catch {
-      setError("Error de conexión");
-      setLoading(false);
-    }
-  };
+    };
 
   useEffect(() => {
-    if (phone) cargarDetalle();
+    if (phone && id)
+      cargarDetalle();
   }, [phone, id]);
 
-  const copiarCuenta = async () => {
-    const cuenta =
-      prestamo?.cuenta_bancaria ||
-      "No disponible";
+  const copiarCuenta =
+    async () => {
+      const cuenta =
+        prestamo?.cuenta_bancaria ||
+        "No disponible";
 
-    await navigator.clipboard.writeText(
-      cuenta
-    );
+      await navigator.clipboard.writeText(
+        cuenta
+      );
 
-    alert("Cuenta copiada");
-  };
+      alert(
+        "Cuenta copiada"
+      );
+    };
 
   if (loading) {
     return (
       <main className="min-h-screen bg-[#F2F3F7] flex items-center justify-center">
         <div className="text-center">
           <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
+
           <p className="mt-4 text-gray-500">
             Cargando detalle...
           </p>
@@ -123,16 +166,22 @@ export default function LoanDetailPage({
     );
   }
 
-  if (error || !prestamo) {
+  if (
+    error ||
+    !prestamo
+  ) {
     return (
       <main className="min-h-screen bg-[#F2F3F7] flex items-center justify-center px-6">
         <div className="w-full max-w-md rounded-3xl bg-white p-8 text-center shadow-sm ring-1 ring-gray-200">
           <p className="font-semibold text-gray-700">
-            {error || "Sin información"}
+            {error ||
+              "Sin información"}
           </p>
 
           <button
-            onClick={() => router.back()}
+            onClick={() =>
+              router.back()
+            }
             className="mt-5 h-[50px] w-full rounded-2xl bg-blue-600 font-semibold text-white"
           >
             Volver
@@ -143,18 +192,22 @@ export default function LoanDetailPage({
   }
 
   const producto =
-    prestamo.producto || "PRÉSTAMO";
+    prestamo.producto ||
+    "PRÉSTAMO";
 
   const nombre =
-    prestamo.nombre_cliente || "Cliente";
+    prestamo.nombre_cliente ||
+    "Cliente";
 
-  const importe = money(
-    prestamo.importe_pagar
-  );
+  const importe =
+    money(
+      prestamo.importe_pagar
+    );
 
-  const fecha = formatFecha(
-    prestamo.fecha_vencimiento
-  );
+  const fecha =
+    formatFecha(
+      prestamo.fecha_vencimiento
+    );
 
   const cuenta =
     prestamo.cuenta_bancaria ||
@@ -178,7 +231,9 @@ export default function LoanDetailPage({
 
         <div className="relative z-10 px-5 pt-10">
           <button
-            onClick={() => router.back()}
+            onClick={() =>
+              router.back()
+            }
             className="flex items-center gap-2 text-white"
           >
             <span>←</span>
@@ -252,7 +307,9 @@ export default function LoanDetailPage({
         </div>
 
         <button
-          onClick={copiarCuenta}
+          onClick={
+            copiarCuenta
+          }
           className="h-[56px] w-full rounded-3xl bg-slate-800 font-bold text-white shadow-lg"
         >
           COPIAR LINK DE PAGO

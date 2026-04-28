@@ -1,16 +1,19 @@
 import { redirect } from "next/navigation";
 
 type Props = {
-  searchParams: {
+  searchParams: Promise<{
     phone?: string;
-  };
+  }>;
 };
 
-export default function ClientIndexPage({
+export default async function ClientIndexPage({
   searchParams,
 }: Props) {
+  const params =
+    await searchParams;
+
   const phone =
-    searchParams.phone || "";
+    params.phone || "";
 
   redirect(
     `/client/solicitar?phone=${encodeURIComponent(

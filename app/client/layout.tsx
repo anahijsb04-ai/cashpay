@@ -1,38 +1,60 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Suspense } from "react";
+import {
+  usePathname,
+  useSearchParams,
+} from "next/navigation";
 
 type Props = {
   children: React.ReactNode;
 };
 
-export default function ClientLayout({
+function ClientLayoutInner({
   children,
 }: Props) {
-  const pathname = usePathname();
+  const pathname =
+    usePathname();
+
+  const params =
+    useSearchParams();
+
+  const phone =
+    params.get("phone") || "";
+
+  const nombre =
+    params.get("nombre") ||
+    phone ||
+    "Cliente";
 
   const nav = [
     {
       name: "Solicitar",
       icon: "🏠",
-      href: "/client/solicitar",
+      href: `/client/solicitar?phone=${encodeURIComponent(
+        phone
+      )}`,
     },
     {
       name: "Préstamos",
       icon: "💳",
-      href: "/client/prestamos",
+      href: `/client/prestamos?phone=${encodeURIComponent(
+        phone
+      )}`,
     },
     {
       name: "Config",
       icon: "⚙️",
-      href: "/client/config",
+      href: `/client/config?phone=${encodeURIComponent(
+        phone
+      )}`,
     },
   ];
 
   return (
     <main className="min-h-screen bg-[#F4F7FB] text-[#111827] pb-28">
-      {/* Header */}
+      {/* HEADER */}
       <header className="bg-white px-5 pt-10 pb-6 shadow-sm">
         <div className="mx-auto max-w-xl">
           <div className="flex items-center justify-between">
@@ -57,23 +79,24 @@ export default function ClientLayout({
             </p>
 
             <p className="mt-1 text-lg font-semibold">
-              Cliente
+              {nombre}
             </p>
           </div>
         </div>
       </header>
 
-      {/* Body */}
+      {/* BODY */}
       <section className="mx-auto max-w-xl px-5 pt-5">
         {children}
       </section>
 
-      {/* Bottom Nav */}
+      {/* NAV */}
       <nav className="fixed bottom-5 left-0 right-0 px-4">
         <div className="mx-auto flex max-w-xl items-center justify-between rounded-[28px] bg-white px-3 py-3 shadow-2xl ring-1 ring-gray-200">
           {nav.map((item) => {
             const active =
-              pathname === item.href;
+              pathname ===
+              item.href.split("?")[0];
 
             return (
               <Link
@@ -96,5 +119,17 @@ export default function ClientLayout({
         </div>
       </nav>
     </main>
+  );
+}
+
+export default function ClientLayout({
+  children,
+}: Props) {
+  return (
+    <Suspense fallback={null}>
+      <ClientLayoutInner>
+        {children}
+      </ClientLayoutInner>
+    </Suspense>
   );
 }

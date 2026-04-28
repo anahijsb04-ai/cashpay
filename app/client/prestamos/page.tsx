@@ -1,6 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { use } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
 import Link from "next/link";
 
 type Prestamo = {
@@ -11,16 +15,19 @@ type Prestamo = {
 };
 
 type Props = {
-  searchParams: {
+  searchParams: Promise<{
     phone?: string;
-  };
+  }>;
 };
 
 export default function PrestamosPage({
   searchParams,
 }: Props) {
+  const params =
+    use(searchParams);
+
   const phone =
-    searchParams.phone || "";
+    params?.phone || "";
 
   const [loading, setLoading] =
     useState(true);
@@ -91,7 +98,6 @@ export default function PrestamosPage({
   return (
     <main className="min-h-screen bg-[#F4F7FB] text-[#111827] px-5 py-6">
       <section className="mx-auto max-w-xl space-y-5">
-        {/* Header */}
         <div className="rounded-[28px] bg-white p-5 shadow-sm ring-1 ring-gray-200">
           <h1 className="text-3xl font-extrabold text-gray-900">
             Mis préstamos
@@ -111,7 +117,6 @@ export default function PrestamosPage({
           </button>
         </div>
 
-        {/* Loading */}
         {loading && (
           <div className="rounded-[28px] bg-white p-10 text-center shadow-sm ring-1 ring-gray-200">
             <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
@@ -122,7 +127,6 @@ export default function PrestamosPage({
           </div>
         )}
 
-        {/* Error */}
         {!loading &&
           error && (
             <div className="rounded-[28px] bg-white p-8 text-center shadow-sm ring-1 ring-gray-200">
@@ -132,7 +136,6 @@ export default function PrestamosPage({
             </div>
           )}
 
-        {/* Data */}
         {!loading &&
           prestamos.map(
             (

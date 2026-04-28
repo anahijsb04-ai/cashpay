@@ -1,16 +1,20 @@
 import Link from "next/link";
 
 type Props = {
-  searchParams: {
+  searchParams: Promise<{
     phone?: string;
-  };
+  }>;
 };
 
-export default function ConfigPage({
+export default async function ConfigPage({
   searchParams,
 }: Props) {
+  const params =
+    await searchParams;
+
   const phone =
-    searchParams.phone || "Usuario";
+    params?.phone ||
+    "Usuario";
 
   const Card = ({
     children,

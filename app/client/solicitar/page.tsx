@@ -1,5 +1,41 @@
-export default function SolicitarPage() {
-  const productos = [
+"use client";
+
+import { use } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
+type Producto = {
+  nombre: string;
+  monto: string;
+  desc: string;
+};
+
+type Props = {
+  searchParams: Promise<{
+    phone?: string;
+  }>;
+};
+
+export default function SolicitarPage({
+  searchParams,
+}: Props) {
+  const params = use(searchParams);
+
+  const phone =
+    params?.phone || "";
+
+  const router = useRouter();
+
+  const [loading, setLoading] =
+    useState(true);
+
+  const [bloqueado, setBloqueado] =
+    useState(false);
+
+  const [mensaje, setMensaje] =
+    useState("");
+
+  const productos: Producto[] = [
     {
       nombre: "Credi max",
       monto: "$1,400",
@@ -17,23 +53,123 @@ export default function SolicitarPage() {
     },
   ];
 
+  useEffect(() => {
+    validarCliente();
+  }, [phone]);
+
+  async function validarCliente() {
+    try {
+      if (!phone) {
+        setBloqueado(true);
+        setMensaje(
+          "Número telefónico no detectado."
+        );
+        setLoading(false);
+        return;
+      }
+
+      const res = await fetch(
+        `/api/prestamos/pendientes?telefono=${encodeURIComponent(
+          phone
+        )}&limite=1`,
+        {
+          cache: "no-store",
+        }
+      );
+
+      const data = await res.json();
+
+      const lista =
+        Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data)
+          ? data
+          : [];
+
+      if (lista.length > 0) {
+        setBloqueado(true);
+        setMensaje(
+          "Pague sus préstamos antes de volver a solicitar."
+        );
+      } else {
+        setBloqueado(false);
+        setMensaje(
+          "Cuenta aprobada para nueva solicitud."
+        );
+      }
+    } catch {
+      setBloqueado(true);
+      setMensaje(
+        "Error al consultar información."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function solicitar(
+    producto: Producto
+  ) {
+    router.push(
+      `/client/solicitud-form?phone=${encodeURIComponent(
+        phone
+      )}&producto=${encodeURIComponent(
+        producto.nombre
+      )}`
+    );
+  }
+
   return (
-    <div className="space-y-5 text-[#111827]">
+    <main className="space-y-5 pb-10 text-[#111827]">
       <div className="rounded-[28px] bg-gradient-to-r from-blue-700 to-blue-500 p-6 text-white shadow-lg">
-        <h2 className="text-3xl font-bold">Solicitar préstamo</h2>
+        <h2 className="text-3xl font-bold">
+          Solicitar préstamo
+        </h2>
+
         <p className="mt-3 text-sm leading-6 text-white/85">
           Accede a financiamiento rápido y seguro con CashPay.
         </p>
+
+        {phone && (
+          <p className="mt-3 text-xs text-white/80">
+            Cliente: {phone}
+          </p>
+        )}
       </div>
 
-      <div className="rounded-3xl border border-red-200 bg-red-50 p-4 shadow-sm">
-        <div className="flex items-start gap-3">
-          <span className="text-lg">🔒</span>
-          <p className="font-semibold text-red-700">
-            Pague sus préstamos antes de volver a solicitar.
+      {loading ? (
+        <div className="rounded-3xl bg-white p-6 text-center shadow-sm ring-1 ring-gray-200">
+          <p className="animate-pulse text-sm text-gray-500">
+            Consultando información...
           </p>
         </div>
-      </div>
+      ) : (
+        <div
+          className={`rounded-3xl p-4 shadow-sm ${
+            bloqueado
+              ? "border border-red-200 bg-red-50"
+              : "border border-green-200 bg-green-50"
+          }`}
+        >
+          <div className="flex items-start gap-3">
+            <span className="text-lg">
+              {bloqueado
+                ? "🔒"
+                : "✅"}
+            </span>
+
+            <p
+              className={`font-semibold ${
+                bloqueado
+                  ? "text-red-700"
+                  : "text-green-700"
+              }`}
+            >
+              {mensaje}
+            </p>
+          </div>
+        </div>
+      )}
 
       {productos.map((item) => (
         <div
@@ -55,15 +191,26 @@ export default function SolicitarPage() {
               {item.monto}
             </h4>
 
-            <button
-              disabled
-              className="mt-5 h-[52px] w-full cursor-not-allowed rounded-2xl bg-gray-200 font-semibold text-gray-500"
-            >
-              🔒 No disponible
-            </button>
+            {bloqueado ? (
+              <button
+                disabled
+                className="mt-5 h-[52px] w-full cursor-not-allowed rounded-2xl bg-gray-200 font-semibold text-gray-500"
+              >
+                🔒 No disponible
+              </button>
+            ) : (
+              <button
+                onClick={() =>
+                  solicitar(item)
+                }
+                className="mt-5 h-[52px] w-full rounded-2xl bg-blue-700 font-semibold text-white transition hover:bg-blue-800"
+              >
+                Solicitar ahora
+              </button>
+            )}
           </div>
         </div>
       ))}
-    </div>
+    </main>
   );
 }
