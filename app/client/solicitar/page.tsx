@@ -1,8 +1,13 @@
 "use client";
 
-import { use } from "react";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import {
+  useEffect,
+  useState,
+} from "react";
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 
 type Producto = {
   nombre: string;
@@ -10,21 +15,15 @@ type Producto = {
   desc: string;
 };
 
-type Props = {
-  searchParams: Promise<{
-    phone?: string;
-  }>;
-};
+export default function SolicitarPage() {
+  const router =
+    useRouter();
 
-export default function SolicitarPage({
-  searchParams,
-}: Props) {
-  const params = use(searchParams);
+  const params =
+    useSearchParams();
 
   const phone =
-    params?.phone || "";
-
-  const router = useRouter();
+    params.get("phone") || "";
 
   const [loading, setLoading] =
     useState(true);
@@ -77,12 +76,17 @@ export default function SolicitarPage({
         }
       );
 
-      const data = await res.json();
+      const data =
+        await res.json();
 
       const lista =
-        Array.isArray(data?.data)
+        Array.isArray(
+          data?.data
+        )
           ? data.data
-          : Array.isArray(data)
+          : Array.isArray(
+              data
+            )
           ? data
           : [];
 
@@ -171,46 +175,50 @@ export default function SolicitarPage({
         </div>
       )}
 
-      {productos.map((item) => (
-        <div
-          key={item.nombre}
-          className="relative overflow-hidden rounded-[26px] bg-white shadow-sm ring-1 ring-gray-200"
-        >
-          <div className="absolute left-0 top-0 h-full w-[6px] bg-blue-700" />
+      {productos.map(
+        (item) => (
+          <div
+            key={item.nombre}
+            className="relative overflow-hidden rounded-[26px] bg-white shadow-sm ring-1 ring-gray-200"
+          >
+            <div className="absolute left-0 top-0 h-full w-[6px] bg-blue-700" />
 
-          <div className="p-5 pl-6">
-            <h3 className="text-xl font-bold text-gray-900">
-              {item.nombre}
-            </h3>
+            <div className="p-5 pl-6">
+              <h3 className="text-xl font-bold text-gray-900">
+                {item.nombre}
+              </h3>
 
-            <p className="mt-2 text-sm text-gray-500">
-              {item.desc}
-            </p>
+              <p className="mt-2 text-sm text-gray-500">
+                {item.desc}
+              </p>
 
-            <h4 className="mt-5 text-4xl font-extrabold text-blue-700">
-              {item.monto}
-            </h4>
+              <h4 className="mt-5 text-4xl font-extrabold text-blue-700">
+                {item.monto}
+              </h4>
 
-            {bloqueado ? (
-              <button
-                disabled
-                className="mt-5 h-[52px] w-full cursor-not-allowed rounded-2xl bg-gray-200 font-semibold text-gray-500"
-              >
-                🔒 No disponible
-              </button>
-            ) : (
-              <button
-                onClick={() =>
-                  solicitar(item)
-                }
-                className="mt-5 h-[52px] w-full rounded-2xl bg-blue-700 font-semibold text-white transition hover:bg-blue-800"
-              >
-                Solicitar ahora
-              </button>
-            )}
+              {bloqueado ? (
+                <button
+                  disabled
+                  className="mt-5 h-[52px] w-full cursor-not-allowed rounded-2xl bg-gray-200 font-semibold text-gray-500"
+                >
+                  🔒 No disponible
+                </button>
+              ) : (
+                <button
+                  onClick={() =>
+                    solicitar(
+                      item
+                    )
+                  }
+                  className="mt-5 h-[52px] w-full rounded-2xl bg-blue-700 font-semibold text-white transition hover:bg-blue-800"
+                >
+                  Solicitar ahora
+                </button>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        )
+      )}
     </main>
   );
 }
