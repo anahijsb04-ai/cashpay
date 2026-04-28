@@ -52,21 +52,15 @@ export default function LoanDetailPage() {
     )}`;
   };
 
-  const formatFecha = (
-    value?: string
-  ) => {
-    if (!value) return "-";
-
-    try {
-      const d =
-        new Date(value);
-
-      return d.toLocaleDateString(
-        "es-MX"
-      );
-    } catch {
-      return value;
-    }
+  const fechaActual = () => {
+    return new Date().toLocaleDateString(
+      "es-MX",
+      {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      }
+    );
   };
 
   async function cargarDetalle() {
@@ -158,7 +152,6 @@ export default function LoanDetailPage() {
       <main className="min-h-screen bg-[#F2F3F7] flex items-center justify-center">
         <div className="text-center">
           <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
-
           <p className="mt-4 text-gray-500">
             Cargando detalle...
           </p>
@@ -206,8 +199,13 @@ export default function LoanDetailPage() {
     );
 
   const fecha =
-    formatFecha(
-      prestamo.fecha_vencimiento
+    new Date().toLocaleDateString(
+      "es-MX",
+      {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      }
     );
 
   const cuenta =
@@ -251,6 +249,10 @@ export default function LoanDetailPage() {
             <h1 className="mt-2 text-3xl font-bold uppercase">
               {producto}
             </h1>
+
+            <p className="mt-2 text-sm text-white/80">
+              {fechaActual()}
+            </p>
           </div>
         </div>
       </section>
