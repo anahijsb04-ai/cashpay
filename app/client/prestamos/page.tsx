@@ -1,11 +1,11 @@
 "use client";
 
-import { use } from "react";
 import {
   useEffect,
   useState,
 } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 type Prestamo = {
   id?: string | number;
@@ -14,20 +14,12 @@ type Prestamo = {
   importe_pagar?: string | number;
 };
 
-type Props = {
-  searchParams: Promise<{
-    phone?: string;
-  }>;
-};
-
-export default function PrestamosPage({
-  searchParams,
-}: Props) {
+export default function PrestamosPage() {
   const params =
-    use(searchParams);
+    useSearchParams();
 
   const phone =
-    params?.phone || "";
+    params.get("phone") || "";
 
   const [loading, setLoading] =
     useState(true);
@@ -46,53 +38,58 @@ export default function PrestamosPage({
     )}`;
   };
 
-  const cargarPrestamos =
-    async () => {
-      try {
-        setLoading(true);
-        setError("");
+  async function cargarPrestamos() {
+    try {
+      setLoading(true);
+      setError("");
 
-        const res = await fetch(
-          `/api/prestamos/pendientes?telefono=${encodeURIComponent(
-            phone
-          )}&limite=50`,
-          {
-            cache: "no-store",
-          }
-        );
-
-        const data =
-          await res.json();
-
-        const lista =
-          Array.isArray(
-            data?.data
-          )
-            ? data.data
-            : [];
-
-        setPrestamos(lista);
-
-        if (
-          lista.length === 0
-        ) {
-          setError(
-            "No tienes préstamos activos"
-          );
-        }
-
-        setLoading(false);
-      } catch {
+      if (!phone) {
         setError(
-          "Error de conexión"
+          "Número telefónico no detectado"
         );
         setLoading(false);
+        return;
       }
-    };
+
+      const res = await fetch(
+        `/api/prestamos/pendientes?telefono=${encodeURIComponent(
+          phone
+        )}&limite=50`,
+        {
+          cache: "no-store",
+        }
+      );
+
+      const data =
+        await res.json();
+
+      const lista =
+        Array.isArray(
+          data?.data
+        )
+          ? data.data
+          : [];
+
+      setPrestamos(lista);
+
+      if (
+        lista.length === 0
+      ) {
+        setError(
+          "No tienes préstamos activos"
+        );
+      }
+    } catch {
+      setError(
+        "Error de conexión"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
 
   useEffect(() => {
-    if (phone)
-      cargarPrestamos();
+    cargarPrestamos();
   }, [phone]);
 
   return (
